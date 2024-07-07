@@ -27,8 +27,10 @@ set -ex
 ####
 # Link Poetry Python To Spark Distribution
 ####
+cd /opt/spark/work-dir
 export PYSPARK_PYTHON=$(poetry show -v 2> /dev/null | head -n1 | cut -d ' ' -f 3)/bin/python
 export PYSPARK_DRIVER_PYTHON=$(poetry show -v 2> /dev/null | head -n1 | cut -d ' ' -f 3)/bin/python
+cd -
 
 ####
 # Check whether there is a passwd entry for the container UID

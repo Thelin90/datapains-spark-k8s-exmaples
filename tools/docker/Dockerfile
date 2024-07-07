@@ -66,26 +66,6 @@ RUN wget -q -O ${SPARK_HOME}/jars/delta-spark_${SCALA_VERSION}-${DELTA_VERSION}.
     "${MAVEN_PROMETHEUS_JAVA_AGENT_URL}/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar" && \
     rm ${SPARK_HOME}/jars/guava-${GUAVA_DELETE_VERSION}.jar
 
-ENV PY4J_VERSION=0.10.9.7 \
-    PYTHONPATH="${SPARK_HOME}/python/:/opt/conda/bin/python"
-
-ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-${PY4J_VERSION}-src.zip:$PYTHONPATH"
-
-ENV PATH="$PATH:${SPARK_HOME}/bin:${SPARK_HOME}/python:${PATH}"
-
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends gcc=4:10.2.1-1 --allow-downgrades && \
-    apt-get -y install --no-install-recommends libc-bin=2.31-13+deb11u5 --allow-downgrades && \
-    apt-get -y install --no-install-recommends libc6=2.31-13+deb11u5 --allow-downgrades && \
-    apt-get -y install --no-install-recommends git=1:2.30.2-1+deb11u2 --allow-downgrades && \
-    apt-get -y install --no-install-recommends make=4.3-4.1 --allow-downgrades && \
-    apt-get -y install --no-install-recommends libgnutls30=3.7.1-5+deb11u3 --allow-downgrades && \
-    apt-get -y install --no-install-recommends tini=0.19.0-1 --allow-downgrades && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
-
-WORKDIR /opt/spark/work-dir
-
 COPY examples /opt/spark/work-dir/examples/
 COPY .git /opt/spark/work-dir/.git/
 COPY [".pre-commit-config.yaml", "Makefile", "poetry.lock", "pyproject.toml", "/opt/spark/work-dir/"]
@@ -98,10 +78,23 @@ ENV PIP_NO_CACHE_DIR=off \
     POETRY_VERSION=1.7.1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN python -m pip install --no-cache-dir pip=="${PIP_VERSION}" && \
+RUN apt-get -y install --no-install-recommends gcc=4:10.2.1-1 --allow-downgrades && \
+    apt-get -y install --no-install-recommends libc-bin=2.31-13+deb11u5 --allow-downgrades && \
+    apt-get -y install --no-install-recommends libc6=2.31-13+deb11u5 --allow-downgrades && \
+    apt-get -y install --no-install-recommends git=1:2.30.2-1+deb11u2 --allow-downgrades && \
+    apt-get -y install --no-install-recommends make=4.3-4.1 --allow-downgrades && \
+    apt-get -y install --no-install-recommends libgnutls30=3.7.1-5+deb11u3 --allow-downgrades && \
+    apt-get -y install --no-install-recommends tini=0.19.0-1 --allow-downgrades && \
+    apt-get -y install --no-install-recommends procps=2:3.3.17-5 --allow-downgrades && \
+    python -m pip install --no-cache-dir pip=="${PIP_VERSION}" && \
     python -m pip install --no-cache-dir poetry=="${POETRY_VERSION}" && \
     poetry config virtualenvs.create true && \
-    make setup-environment && \
-    make info-environment
+    make --directory ${SPARK_HOME}/work-dir setup-environment && \
+    make --directory ${SPARK_HOME}/work-dir info-environment
+
+ENV PY4J_VERSION=0.10.9.7
+ENV PYTHONPATH="${SPARK_HOME}/python/:/opt/conda/bin/python"
+ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-${PY4J_VERSION}-src.zip:$PYTHONPATH"
+ENV PATH="$PATH:${SPARK_HOME}/bin:${SPARK_HOME}/python:${PATH}"
 
 ENTRYPOINT ["/opt/entrypoint.sh"]
