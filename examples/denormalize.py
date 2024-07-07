@@ -25,7 +25,7 @@ def set_delta_python_jar(
             f"SCALA VERSION: {SCALA_VERSION}"
         )
         _spark_session.sparkContext.addPyFile(
-            f"{SPARK_HOME_JARS}/delta-spark{SCALA_VERSION}-{DELTA_VERSION}.jar"
+            f"{SPARK_HOME_JARS}/delta-spark_{SCALA_VERSION}-{DELTA_VERSION}.jar"
         )
 
 

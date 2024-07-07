@@ -78,7 +78,8 @@ ENV PIP_NO_CACHE_DIR=off \
     POETRY_VERSION=1.7.1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN apt-get -y install --no-install-recommends gcc=4:10.2.1-1 --allow-downgrades && \
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends gcc=4:10.2.1-1 --allow-downgrades && \
     apt-get -y install --no-install-recommends libc-bin=2.31-13+deb11u5 --allow-downgrades && \
     apt-get -y install --no-install-recommends libc6=2.31-13+deb11u5 --allow-downgrades && \
     apt-get -y install --no-install-recommends git=1:2.30.2-1+deb11u2 --allow-downgrades && \
@@ -90,7 +91,9 @@ RUN apt-get -y install --no-install-recommends gcc=4:10.2.1-1 --allow-downgrades
     python -m pip install --no-cache-dir poetry=="${POETRY_VERSION}" && \
     poetry config virtualenvs.create true && \
     make --directory ${SPARK_HOME}/work-dir setup-environment && \
-    make --directory ${SPARK_HOME}/work-dir info-environment
+    make --directory ${SPARK_HOME}/work-dir info-environment && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 ENV PY4J_VERSION=0.10.9.7
 ENV PYTHONPATH="${SPARK_HOME}/python/:/opt/conda/bin/python"
