@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "datapains-spark-k8s-examples"
+version = "0.0.1"
+description = "Repo for example spark on k8s workflows"
+authors = ["Simon Thelin"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+delta-spark = "3.2.0"
+pyspark = "3.5.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.2.0"
+pytest-cov = "^5.0.0"
+pre-commit = "3.7.0"
