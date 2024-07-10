@@ -72,7 +72,7 @@ def transform(_df: DataFrame) -> DataFrame:
 
 def load(_df: DataFrame, _spark_logger: Type[JavaObject], write_mode: str = "append"):
     _spark_logger.info(f"load data mode: {write_mode}")
-    _df.write.format("delta").saveAsTable("people")
+    _df.write.format("delta").saveAsTable(f"{os.getenv('SPARK_HOME')}/tables/people")
 
 
 if __name__ == "__main__":
@@ -88,6 +88,8 @@ if __name__ == "__main__":
     df: DataFrame = transform(_df=df)
     load(_df=df, _spark_logger=spark_logger)
 
-    delta_table = DeltaTable.forPath(spark_session, "people")
+    delta_table = DeltaTable.forPath(
+        spark_session, f"{os.getenv('SPARK_HOME')}/tables/people"
+    )
 
     delta_table.history().show()
