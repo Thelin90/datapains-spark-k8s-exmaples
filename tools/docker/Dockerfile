@@ -32,7 +32,6 @@ ENV SCALA_VERSION=2.13 \
     AWS_JAVA_SDK_VERSION=1.12.262 \
     GUAVA_VERSION=31.1 \
     GUAVA_DELETE_VERSION=14.0.1 \
-    ANTLR_4_DELETE_VERSION=4.9.3 \
     SPARK_SQL_VERSION=3.5.1 \
     FAILURE_ACCESS_VERSION=1.0.1 \
     WILDFLY_VERSION=1.0.7 \
@@ -73,7 +72,6 @@ RUN wget -q -O ${SPARK_HOME}/jars/delta-spark_${SCALA_VERSION}-${DELTA_VERSION}.
     ${MAVEN_URL}/maven2/org/antlr/antlr4-runtime/${ANTLR_4_RUNTIME_VERSION}/antlr4-runtime-${ANTLR_4_RUNTIME_VERSION}.jar && \
     wget -q -O ${SPARK_HOME}/jars/scala-library-${SCALA_VERSION}.13.jar \
     ${MAVEN_URL}/maven2/org/scala-lang/scala-library/${SCALA_VERSION}.13/scala-library-${SCALA_VERSION}.13.jar
-    #rm ${SPARK_HOME}/jars/antlr4-runtime-${ANTLR_4_DELETE_VERSION}.jar
 
 COPY examples /opt/spark/work-dir/examples/
 COPY .git /opt/spark/work-dir/.git/
