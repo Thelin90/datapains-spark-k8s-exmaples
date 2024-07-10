@@ -6,10 +6,16 @@ authors = ["Simon Thelin"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-delta-spark = "3.2.0"
-pyspark = "3.5.1"
+delta-spark = "4.0.0rc1"
+pyspark = "4.0.0.dev1"
+pandas = "2.2.2"
+pyarrow = "16.1.0"
+grpcio = "1.64.1"
+google = "3.0.0"
+google-api-core = "2.19.1"
+grpcio-status = "1.64.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.2.0"
 pytest-cov = "^5.0.0"
-pre-commit = "3.7.0"
+pre-commit = "^3.7.1"

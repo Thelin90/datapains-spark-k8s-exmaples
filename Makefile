@@ -1,8 +1,9 @@
-export APP := 3.5.1-delta-4.0.0rc1-hadoop-3-java-17-scala-2.13-python-3.9
+export APP := 4.0.0-preview1-delta-4.0.0rc1-hadoop-3-java-17-scala-2.13-python-3.9
 export TAG := 0.0.1
 export DOCKER_FILE_PATH := tools/docker
 export CONTEXT := .
 export DOCKER_BUILD := buildx build
+export SPARK_IMAGE := 4.0.0-preview1-delta-4.0.0rc1-hadoop-3-java-17-scala-2.13-python-3.9
 
 setup-environment: clean-environment install-environment install-linter
 
@@ -49,3 +50,7 @@ poetry-path:
 .PHONY: linter
 linter:
 	poetry run pre-commit run --all-files
+
+.PHONY: local-pyspark-shell
+local-pyspark-shell:
+	docker run -it $(SPARK_IMAGE):$(TAG) pyspark --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"

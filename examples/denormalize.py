@@ -3,8 +3,7 @@ from typing import Type
 
 from py4j.java_gateway import JavaObject
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col
-from pyspark.sql.types import StructType
+from delta.tables import DeltaTable
 
 SPARK_HOME_JARS = f"{os.getenv('SPARK_HOME')}/jars"
 DELTA_VERSION = os.getenv("DELTA_VERSION")
@@ -42,32 +41,38 @@ def extract(_spark_session: SparkSession) -> DataFrame:
         [3, ("Charlie", "Johnson", 35)],
     ]
     columns = ["id", "data"]
-    return _spark_session.createDataFrame(data, columns)
+    _df = _spark_session.createDataFrame(data, columns)
+
+    # Only for demo
+    _df.printSchema()
+
+    return _df
 
 
-def _flatten_schema(_df: DataFrame, prefix="") -> DataFrame:
-    fields = []
+def _flatten_schema(_df: DataFrame, denormalize_column="data") -> DataFrame:
+    # Only for demo purpose
+    _df.show()
+    columns = ["id", "name", "surname", "age"]
 
-    for field in _df.schema.fields:
-        field_name = f"{prefix}.{field.name}" if prefix else field.name
-        if isinstance(field.dataType, StructType):
-            nested_df = _df.select(col(col=field_name + ".*"))
-            fields.extend(_flatten_schema(_df=nested_df, prefix=field_name).columns)
-        else:
-            fields.append(field_name)
+    _df = _df.select("*", "data.*").drop("data")
 
-    return _df.select(
-        [col(col=field).alias(field.replace(__old=".", __new="_")) for field in fields]
-    )
+    for old_col, new_col in zip(_df.columns, columns):
+        _df = _df.withColumnRenamed(old_col, new_col)
+
+    _df.printSchema()
+
+    _df.show()
+
+    return _df
 
 
 def transform(_df: DataFrame) -> DataFrame:
     return _flatten_schema(_df=_df)
 
 
-def write(_df: DataFrame, _spark_logger: Type[JavaObject]):
-    _spark_logger.info("Denormalized DataFrame:")
-    _df.show()
+def load(_df: DataFrame, _spark_logger: Type[JavaObject], write_mode: str = "append"):
+    _spark_logger.info(f"load data mode: {write_mode}")
+    _df.write.format("delta").saveAsTable("people")
 
 
 if __name__ == "__main__":
@@ -81,4 +86,8 @@ if __name__ == "__main__":
 
     df: DataFrame = extract(_spark_session=spark_session)
     df: DataFrame = transform(_df=df)
-    write(_df=df, _spark_logger=spark_logger)
+    load(_df=df, _spark_logger=spark_logger)
+
+    delta_table = DeltaTable.forPath(spark_session, "people")
+
+    delta_table.history().show()

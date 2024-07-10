@@ -9,7 +9,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-ENV SPARK_VERSION=3.5.1 \
+ENV SPARK_VERSION=4.0.0-preview1 \
     CORE_HADOOP_VERSION=3 \
     SPARK_HOME="opt/spark" \
     SPARK_URL="https://archive.apache.org/dist/spark"
@@ -32,16 +32,20 @@ ENV SCALA_VERSION=2.13 \
     AWS_JAVA_SDK_VERSION=1.12.262 \
     GUAVA_VERSION=31.1 \
     GUAVA_DELETE_VERSION=14.0.1 \
+    ANTLR_4_DELETE_VERSION=4.9.3 \
     SPARK_SQL_VERSION=3.5.1 \
     FAILURE_ACCESS_VERSION=1.0.1 \
     WILDFLY_VERSION=1.0.7 \
-    PROMETHEUS_VERSION=1.0.0
+    PROMETHEUS_VERSION=1.0.0 \
+    ANTLR_4_RUNTIME_VERSION=4.13.1 \
+    SCALA_LIBRARY_VERSION=2.13.13
 
 ENV PROMETHEUS_JAR_LOCATION="/prometheus/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar" \
     MAVEN_PROMETHEUS_JAVA_AGENT_URL="https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent"
 
 ####
 # Baseline Jars such as Delta Spark, Hadoop AWS, Spark SQL, Prometheus etc
+# See https://mvnrepository.com/artifact/io.delta/delta-spark_2.13/4.0.0rc1
 ####
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN wget -q -O ${SPARK_HOME}/jars/delta-spark_${SCALA_VERSION}-${DELTA_VERSION}.jar \
@@ -64,7 +68,12 @@ RUN wget -q -O ${SPARK_HOME}/jars/delta-spark_${SCALA_VERSION}-${DELTA_VERSION}.
     ${MAVEN_URL}/maven2/com/google/guava/failureaccess/${FAILURE_ACCESS_VERSION}/failureaccess-${FAILURE_ACCESS_VERSION}.jar && \
     wget -q -O ${SPARK_HOME}/jars/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar \
     "${MAVEN_PROMETHEUS_JAVA_AGENT_URL}/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar" && \
-    rm ${SPARK_HOME}/jars/guava-${GUAVA_DELETE_VERSION}.jar
+    rm ${SPARK_HOME}/jars/guava-${GUAVA_DELETE_VERSION}.jar && \
+    wget -q -O ${SPARK_HOME}/jars/antlr4-runtime-${ANTLR_4_RUNTIME_VERSION}.jar \
+    ${MAVEN_URL}/maven2/org/antlr/antlr4-runtime/${ANTLR_4_RUNTIME_VERSION}/antlr4-runtime-${ANTLR_4_RUNTIME_VERSION}.jar && \
+    wget -q -O ${SPARK_HOME}/jars/scala-library-${SCALA_VERSION}.13.jar \
+    ${MAVEN_URL}/maven2/org/scala-lang/scala-library/${SCALA_VERSION}.13/scala-library-${SCALA_VERSION}.13.jar
+    #rm ${SPARK_HOME}/jars/antlr4-runtime-${ANTLR_4_DELETE_VERSION}.jar
 
 COPY examples /opt/spark/work-dir/examples/
 COPY .git /opt/spark/work-dir/.git/
@@ -75,7 +84,8 @@ ENV PIP_NO_CACHE_DIR=off \
     PIP_DEFAULT_TIMEOUT=100 \
     PYTHONPATH="./:${PYTHONPATH}" \
     PIP_VERSION=24.1.1 \
-    POETRY_VERSION=1.7.1
+    POETRY_VERSION=1.7.1 \
+    PYARROW_IGNORE_TIMEZONE=1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && \
